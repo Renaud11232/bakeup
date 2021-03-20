@@ -1,0 +1,18 @@
+{
+  "backups": [
+    {
+      "before": [
+        "echo Before"
+      ],
+      "source": "/",
+      "dest": "/media/backup",
+      "exceptions": [
+        "/sbin",
+        "/whatever"
+      ],
+      "after": [
+        "echo after"
+      ]
+    }
+  ]
+}
