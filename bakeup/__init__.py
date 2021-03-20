@@ -1,7 +1,6 @@
 import logging
 import sys
 import json
-import shlex
 import os
 import subprocess
 import threading
@@ -38,7 +37,7 @@ class BakeUp:
     def __execute_before(self, script):
         self.__logger.info("Executing 'before' script")
         for command in script:
-            self.__exec(shlex.split(command))
+            self.__exec(command)
         self.__logger.info("Done executing 'before' script")
 
     def __execute_rsync(self, dry_run, source, dest, exceptions=None):
@@ -56,7 +55,7 @@ class BakeUp:
     def __execute_after(self, script):
         self.__logger.info("Executing 'after' script")
         for command in script:
-            self.__exec(shlex.split(command))
+            self.__exec(command)
         self.__logger.info("Done executing 'after' script")
 
     def __exec(self, args):
