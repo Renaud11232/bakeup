@@ -26,10 +26,11 @@ class BakeUp:
         self.__logger.info("Executing backup #%d" % index)
         if "before" in backup and backup["before"] is not None:
             self.__execute_before(backup["before"])
+        dry_run = "dry-run" in backup and backup["dry-run"] is True
         if "exceptions" in backup and backup["exceptions"] is not None:
-            self.__execute_rsync(backup["source"], backup["dest"], backup["exceptions"])
+            self.__execute_rsync(dry_run, backup["source"], backup["dest"], backup["exceptions"])
         else:
-            self.__execute_rsync(backup["source"], backup["dest"])
+            self.__execute_rsync(dry_run, backup["source"], backup["dest"])
         if "after" in backup and backup["after"] is not None:
             self.__execute_after(backup["after"])
         self.__logger.info("Done executing backup #%d" % index)
@@ -40,9 +41,11 @@ class BakeUp:
             self.__exec(shlex.split(command))
         self.__logger.info("Done executing 'before' script")
 
-    def __execute_rsync(self, source, dest, exceptions=None):
+    def __execute_rsync(self, dry_run, source, dest, exceptions=None):
         self.__logger.info("Performing backup")
         command = ["rsync", "-av", "--delete-before", "--force", "--stats"]
+        if dry_run:
+            command.append("--dry-run")
         if exceptions:
             for exception in exceptions:
                 command.extend(["--exclude", exception])

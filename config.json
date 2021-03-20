@@ -1,6 +1,7 @@
 {
   "backups": [
     {
+      "dry-run": true,
       "before": [
         "echo Before"
       ],
