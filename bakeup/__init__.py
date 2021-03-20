@@ -37,7 +37,7 @@ class BakeUp:
     def __execute_before(self, script):
         self.__logger.info("Executing 'before' script")
         for command in script:
-            self.__exec(command)
+            self.__exec(command, True)
         self.__logger.info("Done executing 'before' script")
 
     def __execute_rsync(self, dry_run, source, dest, exceptions=None):
@@ -49,21 +49,22 @@ class BakeUp:
             for exception in exceptions:
                 command.extend(["--exclude", exception])
         command.extend([source, dest])
-        self.__exec(command)
+        self.__logger.error(" ".join(command))
+        self.__exec(command, False)
         self.__logger.info("Backup done")
 
     def __execute_after(self, script):
         self.__logger.info("Executing 'after' script")
         for command in script:
-            self.__exec(command)
+            self.__exec(command, True)
         self.__logger.info("Done executing 'after' script")
 
-    def __exec(self, args):
+    def __exec(self, args, shell):
         if len(args) < 1:
             return
         program_name = os.path.basename(args[0])
         logger = self.__get_logger(program_name)
-        with subprocess.Popen(args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as process:
+        with subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as process:
             stdout_thread = threading.Thread(target=self.__log_ouput, args=(process.stdout, logger.info))
             stderr_thread = threading.Thread(target=self.__log_ouput, args=(process.stderr, logger.warning))
             stdout_thread.start()
