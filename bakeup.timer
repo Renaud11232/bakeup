@@ -1,0 +1,9 @@
+[Unit]
+Description=Runs the bakeup.service every day at 3am
+
+[Timer]
+OnCalendar=*-*-* 3:00:00
+Unit=bakeup.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=Cooks a tasty backup
+
+[Service]
+Type=oneshot
+ExecStart=/opt/bakeup/bin/bakeup --config /opt/bakeup/config.json
+
+[Install]
+WantedBy=multi-user.target
