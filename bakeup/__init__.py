@@ -49,7 +49,6 @@ class BakeUp:
             for exception in exceptions:
                 command.extend(["--exclude", exception])
         command.extend([source, dest])
-        self.__logger.error(" ".join(command))
         self.__exec(command, False)
         self.__logger.info("Backup done")
 
