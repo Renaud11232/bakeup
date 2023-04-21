@@ -1,4 +1,7 @@
 {
+  "before-all": [
+    "echo before-all"
+  ],
   "backups": [
     {
       "dry-run": true,
@@ -15,5 +18,8 @@
         "echo after"
       ]
     }
+  ],
+  "after-all": [
+    "echo after-all"
   ]
 }

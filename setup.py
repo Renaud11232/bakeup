@@ -8,7 +8,7 @@ def get_long_description():
 
 setuptools.setup(
     name="bakeup",
-    version="0.1.0",
+    version="0.2.0",
     author="Renaud Gaspard",
     author_email="gaspardrenaud@hotmail.com",
     description="Cokking a backup has never been that easy",

@@ -16,23 +16,37 @@ class BakeUp:
         self.__logger = self.__get_logger("bakeup")
 
     def cook(self):
+        if "before-all" in self.__config and self.__config["before-all"] is not None:
+            self.__execute_before_all(self.__config["before-all"])
         i = 1
-        for backup in self.__backups:
+        for backup in self.__config["backups"]:
             self.__execute_backup(backup, i)
             i += 1
+        if "after-all" in self.__config and self.__config["after-all"] is not None:
+            self.__execute_after_all(self.__config["after-all"])
 
     def __execute_backup(self, backup, index):
         self.__logger.info("Executing backup #%d" % index)
         if "before" in backup and backup["before"] is not None:
             self.__execute_before(backup["before"])
         dry_run = "dry-run" in backup and backup["dry-run"] is True
-        if "exceptions" in backup and backup["exceptions"] is not None:
-            self.__execute_rsync(dry_run, backup["source"], backup["dest"], backup["exceptions"])
-        else:
-            self.__execute_rsync(dry_run, backup["source"], backup["dest"])
+        exceptions = backup["exceptions"] if "exceptions" in backup else None
+        self.__execute_rclone(dry_run, backup["source"], backup["dest"], exceptions)
         if "after" in backup and backup["after"] is not None:
             self.__execute_after(backup["after"])
         self.__logger.info("Done executing backup #%d" % index)
+
+    def __execute_before_all(self, script):
+        self.__logger.info("Executing 'before-all' script")
+        for command in script:
+            self.__exec(command, True)
+        self.__logger.info("Done executing 'before-all' script")
+
+    def __execute_after_all(self, script):
+        self.__logger.info("Executing 'after-all' script")
+        for command in script:
+            self.__exec(command, True)
+        self.__logger.info("Done executing 'after-all' script")
 
     def __execute_before(self, script):
         self.__logger.info("Executing 'before' script")
@@ -40,9 +54,9 @@ class BakeUp:
             self.__exec(command, True)
         self.__logger.info("Done executing 'before' script")
 
-    def __execute_rsync(self, dry_run, source, dest, exceptions=None):
+    def __execute_rclone(self, dry_run, source, dest, exceptions):
         self.__logger.info("Performing backup")
-        command = ["rsync", "-av", "--delete-before", "--force", "--stats"]
+        command = ["rclone", "sync", "--links", "--track-renames", "--delete-during"]
         if dry_run:
             command.append("--dry-run")
         if exceptions:
@@ -79,8 +93,7 @@ class BakeUp:
     def __load_config(self, config_file_path):
         self.__logger.info("Loading configuration file...")
         with open(config_file_path, "r") as config_file:
-            config = json.load(config_file)
-            self.__backups = config["backups"]
+            self.__config = json.load(config_file)
             self.__logger.info("Config loaded")
 
     @staticmethod
