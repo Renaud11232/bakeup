@@ -5,6 +5,7 @@ import os
 import subprocess
 import threading
 import re
+import shlex
 from datetime import datetime
 
 
@@ -94,7 +95,10 @@ class BakeUp:
     def __exec(self, args, shell):
         if len(args) < 1:
             return
-        program_name = os.path.basename(args[0])
+        if type(args) is str:
+            program_name = os.path.basename(shlex.split(args)[0])
+        else:
+            program_name = os.path.basename(args[0])
         logger = self.__get_logger(program_name)
         with subprocess.Popen(args, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as process:
             stdout_thread = threading.Thread(target=self.__log_ouput, args=(process.stdout, logger.info))
