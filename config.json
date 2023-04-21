@@ -10,9 +10,24 @@
       ],
       "source": "/",
       "dest": "/media/backup",
-      "exceptions": [
+      "excludes": [
         "/sbin",
         "/whatever"
+      ],
+      "includes": [
+        "/toinclude/",
+        "/another_one"
+      ],
+      "filters": [
+        "+ /home/**",
+        "- **"
+      ],
+      "bwlimit": "50K:5M",
+      "backup-dir": "/path/to/your/{{date?%Y-%m-%d}}/backups",
+      "checksum": true,
+      "additional_arguments": [
+        "-v",
+        "--progress"
       ],
       "after": [
         "echo after"

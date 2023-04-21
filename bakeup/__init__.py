@@ -4,6 +4,8 @@ import json
 import os
 import subprocess
 import threading
+import re
+from datetime import datetime
 
 
 class BakeUp:
@@ -29,9 +31,15 @@ class BakeUp:
         self.__logger.info("Executing backup #%d" % index)
         if "before" in backup and backup["before"] is not None:
             self.__execute_before(backup["before"])
-        dry_run = "dry-run" in backup and backup["dry-run"] is True
-        exceptions = backup["exceptions"] if "exceptions" in backup else None
-        self.__execute_rclone(dry_run, backup["source"], backup["dest"], exceptions)
+        dry_run = backup["dry-run"] if "dry-run" in backup else False
+        excludes = backup["excludes"] if "excludes" in backup else []
+        includes = backup["includes"] if "includes" in backup else []
+        additional_args = backup["additional_arguments"] if "additional_arguments" in backup else []
+        filters = backup["filters"] if "filters" in backup else []
+        bwlimit = backup["bwlimit"] if "bwlimit" in backup else None
+        backup_dir = backup["backup-dir"] if "backup-dir" in backup else None
+        checksum = backup["checksum"] if "checksum" in backup else False
+        self.__execute_rclone(dry_run, backup["source"], backup["dest"], excludes, includes, filters, bwlimit, backup_dir, checksum, additional_args)
         if "after" in backup and backup["after"] is not None:
             self.__execute_after(backup["after"])
         self.__logger.info("Done executing backup #%d" % index)
@@ -54,14 +62,25 @@ class BakeUp:
             self.__exec(command, True)
         self.__logger.info("Done executing 'before' script")
 
-    def __execute_rclone(self, dry_run, source, dest, exceptions):
+    def __execute_rclone(self, dry_run, source, dest, excludes, includes, filters, bwlimit, backup_dir, checksum, args):
         self.__logger.info("Performing backup")
         command = ["rclone", "sync", "--links", "--track-renames", "--delete-during"]
-        if dry_run:
+        if dry_run is True:
             command.append("--dry-run")
-        if exceptions:
-            for exception in exceptions:
-                command.extend(["--exclude", exception])
+        for exclude in excludes:
+            command.extend(["--exclude", exclude])
+        for include in includes:
+            command.extend(["--include", include])
+        for filter in filters:
+            command.extend(["--filter", filter])
+        for arg in args:
+            command.append(arg)
+        if bwlimit:
+            command.extend(["--bwlimit", bwlimit])
+        if backup_dir:
+            command.extend(["--backup-dir", self.__replace_date(backup_dir)])
+        if checksum is True:
+            command.append("--checksum")
         command.extend([source, dest])
         self.__exec(command, False)
         self.__logger.info("Backup done")
@@ -89,6 +108,13 @@ class BakeUp:
     def __log_ouput(output_stream, logger):
         for line in output_stream:
             logger(line.rstrip())
+
+    @staticmethod
+    def __replace_date(input):
+        match = re.search(r"{{date\?(.*?)}}", input)
+        if match:
+            return input.replace(match.group(0), datetime.now().strftime(match.group(1)))
+        return input
 
     def __load_config(self, config_file_path):
         self.__logger.info("Loading configuration file...")
