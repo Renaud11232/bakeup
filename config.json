@@ -1,10 +1,16 @@
 {
+  "environment": {
+    "SOME_ENV_VAR": "with a value"
+  },
   "before-all": [
     "echo before-all"
   ],
   "backups": [
     {
       "dry-run": true,
+      "environment": {
+        "SOME_OTHER_VAR": "with another value"
+      },
       "before": [
         "echo Before"
       ],
