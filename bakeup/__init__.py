@@ -70,7 +70,7 @@ class BakeUp:
     def __execute_rclone(self, dry_run, source, dest, excludes, includes, filters, bwlimit, backup_dir, checksum, args,
                          env):
         self.__logger.info("Performing backup")
-        command = ["rclone", "sync", "--links", "--track-renames", "--delete-during"]
+        command = ["rclone", "sync", "--links", "--metadata"]
         if dry_run is True:
             command.append("--dry-run")
         for exclude in excludes:
