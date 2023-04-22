@@ -87,7 +87,7 @@ class BakeUp:
             command.extend(["--backup-dir", self.__replace_date(backup_dir)])
         if checksum is True:
             command.append("--checksum")
-        command.extend([source, dest])
+        command.extend([source, self.__replace_date(dest)])
         self.__exec(command, False, env)
         self.__logger.info("Backup done")
 
